@@ -40,29 +40,6 @@ namespace binaryTreeProj
 
         }
 
-        internal void fill(int key)
-        {
-            if (Root == null)
-            {
-                Root = new BNode { Data = key };
-                return;
-            }
-            InsertData(Root,key);
-        }
-
-        internal void fill()
-        {
-            for (int i = 0; i < 10; i++)
-            {
-                if (Root == null)
-                {
-                    Root = new BNode { Data = i };
-                    continue;
-                }
-                InsertData(Root, i);
-            }
-        }
-
         BNode FindData(BNode root, int data)
         {
             if (root == null)
@@ -82,107 +59,105 @@ namespace binaryTreeProj
 
         internal bool DeleteData(int data)
         {
-            var nodeToDelte = FindData(Root, data);
-            if (nodeToDelte == null)
+            var nodeToDelete = FindData(Root, data);
+            if (nodeToDelete == null)
             {
                 return false;
             }
+            if (nodeToDelete.IsLeaf)
+            {
+                DeleteIsLeaf(nodeToDelete);
+                return true;
+            }
+            if (nodeToDelete.HasOnlyOneSone)
+            {
+                DeleteHasOneSon(nodeToDelete);
+                return true;
+
+            }
             else
             {
-                if (nodeToDelte.IsLeaf)
+                var nextNode = getNextNode(nodeToDelete);
+                var oldData = nodeToDelete.Data;
+                nodeToDelete.Data = nextNode.Data;
+                nextNode.Data = oldData;
+                if (nodeToDelete.Right == nextNode)
                 {
-                    var parent = nodeToDelte.Parent;
-                    if (parent.Left == nodeToDelte)
+                    if (nextNode.IsLeaf)
                     {
-                        
-                        parent.Left = null;
-                        return true;
-
+                        DeleteIsLeaf(nodeToDelete);
                     }
-                    if (parent.Right == nodeToDelte)
+                    else
                     {
-                        parent.Right = null;
-                        return true;
-                    }
-                       
-                }
-                if (nodeToDelte.HasOnlyOneSone)
-                {
-                    if (nodeToDelte.Right != null)
-                    {
-                        if(nodeToDelte.InRightSide)
-                        {
-                            nodeToDelte.Parent.Right = nodeToDelte.Right;
-                            nodeToDelte.Right.Parent = nodeToDelte.Parent;
-                            return true;
-                        }
-                        if (nodeToDelte.InLeftSide)
-                        {
-                            nodeToDelte.Parent.Left = nodeToDelte.Right;
-                            nodeToDelte.Right.Parent = nodeToDelte.Parent;
-                            return true;
-                        }
-
-                    }
-
-                    if (nodeToDelte.Left != null)
-                    {
-                        if (nodeToDelte.InRightSide)
-                        {
-                            nodeToDelte.Parent.Right = nodeToDelte.Left;
-                            nodeToDelte.Left.Parent = nodeToDelte.Parent;
-                            return true;
-                        }
-                        if (nodeToDelte.InLeftSide)
-                        {
-                            nodeToDelte.Parent.Left = nodeToDelte.Left;
-                            nodeToDelte.Left.Parent = nodeToDelte.Parent;
-                            return true;
-                        }
-
+                        DeleteHasOneSon(nextNode);
                     }
                 }
                 else
                 {
-                    BNode nextNode = getNextNode(nodeToDelte);
-                    nodeToDelte.Data = nextNode.Data;
 
-
-                    if (nextNode.InRightSide)
-                    {
-                        nextNode.Parent.Right = null;
-                    }
-                    else
-                    {
-                        nextNode.Parent.Left = null;
-                    }
-                     
-                    return true;
+                nextNode.Parent.RemoveChild(nextNode);
                 }
-                return false;
+
+                return true;
+                
             }
+
+        }
+
+        private void DeleteIsLeaf(BNode nodeToDelete)
+        {
+            nodeToDelete.RemoveChild(nodeToDelete);
         }
 
         private BNode getNextNode(BNode node)
         {
             BNode nextNode = node.Right;
-            if (node.Right.IsLeaf)
+            while (nextNode.Left != null)
             {
-                return node.Right;
+                nextNode = nextNode.Left;
             }
-            else
-            {
-                while (nextNode.Left != null)
-                {
-                    nextNode = nextNode.Left;
-                    if (!nextNode.HasOnlyOneSone && ! nextNode.IsLeaf)
-                    {
-                        return null;
-                    }
-                }
-                return nextNode;
-            }
+
+            // is always leaf
+            return nextNode;
         }
+
+        internal void Fill(int key)
+        {
+            if (Root == null)
+            {
+                Root = new BNode { Data = key };
+                return;
+            }
+            InsertData(Root,key);
+        }
+
+        internal void FillDemo()
+        {
+            Fill(5);
+            Fill(8);
+            Fill(10);
+            Fill(7);
+            Fill(20);
+            Fill(0);
+            Fill(3);
+            Fill(50);
+            Fill(15);
+        }
+        
+        private void DeleteHasOneSon(BNode nodeToDelete)
+        {
+            if (nodeToDelete.HasOnlyOneSone)
+            {
+                var child = nodeToDelete.GetOneChild();
+                var parent = nodeToDelete.Parent;
+
+                var inLeftSide = nodeToDelete.InLeftSide;
+                parent.RemoveChild(nodeToDelete);
+                parent.AddChild(child, inLeftSide);
+            }
+            
+        }
+
        
     }
 
